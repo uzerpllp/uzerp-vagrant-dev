@@ -1,0 +1,33 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.network :forwarded_port, guest: 8080, host: 8080
+  config.vm.network :forwarded_port, guest: 5432, host: 5432
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+  end
+  
+  config.vm.synced_folder ".", "/vagrant",  :mount_options => ["dmode=777,fmode=666"]
+  
+  # Copy dist db dump update script
+  config.vm.provision "shell",
+    inline: "cp /vagrant/utils/update-dist-dbs.sh /home/vagrant/update-dist-dbs.sh && chmod a+x /home/vagrant/update-dist-dbs.sh"
+        
+  config.vm.provision :puppet do |puppet|
+    puppet.manifests_path = "puppet/manifests"
+    puppet.module_path = "puppet/modules"
+    puppet.manifest_file  = "base.pp"
+  end
+ 
+  #Install composer and phinx   
+$script = <<SCRIPT
+cd /tmp
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+SCRIPT
+
+  Vagrant.configure("2") do |config|
+    config.vm.provision "shell", inline: $script
+  end
+
+end

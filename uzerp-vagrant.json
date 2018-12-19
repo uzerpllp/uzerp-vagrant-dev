@@ -1,0 +1,103 @@
+{
+  "variables": {
+      "ssh_user": "vagrant",
+      "ssh_pass": "vagrant",
+      "hostname": "uzerp-dev-box"
+  },
+    
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "output_directory": "uzerp-vagrant",
+      "vm_name": "uzerp-dev-box-1804",
+      "guest_os_type": "Ubuntu_64",
+      "iso_url": "box-source/iso/ubuntu-18.04.1-server-amd64.iso",
+      "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+      "iso_checksum_type": "sha256",
+      "disk_size": "25000",
+      "hard_drive_interface": "sata",
+      "http_directory": "box-source/templates",
+      "http_port_min" : 9001,
+      "http_port_max" : 9001,
+      "ssh_username": "{{user `ssh_user`}}",
+      "ssh_password": "{{user `ssh_pass`}}",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "60m",
+      "shutdown_command": "echo {{user `ssh_pass`}} | sudo -S shutdown -P now",
+      "headless": "false",
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " console-setup/ask_detect=false<wait>",
+        " console-setup/layoutcode=uk<wait>",
+        " console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_GB<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=GB<wait>",
+        " keyboard-configuration/variant=GB<wait>",
+        " locale=en_GB<wait>",
+        " netcfg/get_domain=vm<wait>",
+        " netcfg/get_hostname=vagrant<wait>",
+        " grub-installer/bootdev=/dev/sda<wait>",
+        " noapic<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s"
+    }
+  ],
+  
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `ssh_pass`}}' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "echo '%sudo    ALL=(ALL)  NOPASSWD:ALL' >> /etc/sudoers"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "box-source/puppet/hieradata",
+      "destination": "/tmp"
+    },
+    {
+      "type": "puppet-masterless",
+      "manifest_file": "box-source/puppet/manifests/uzerp-dev-box.pp",
+      "module_paths": [ "box-source/puppet/modules" ],
+      "hiera_config_path": "box-source/puppet/hieradata/hiera.yaml",
+      "execute_command": "echo '{{user `ssh_pass`}}' | {{.FacterVars}}{{if .Sudo}} sudo -S -E {{end}}puppet apply --verbose --modulepath='{{.ModulePath}}' {{if ne .HieraConfigPath \"\"}}--hiera_config='{{.HieraConfigPath}}' {{end}}  {{if ne .ManifestDir \"\"}}--manifestdir='{{.ManifestDir}}' {{end}} --detailed-exitcodes {{.ManifestFile}}"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | sudo -S sh '{{ .Path }}'",
+      "inline": ["cd /tmp", "curl -sS https://getcomposer.org/installer | php", "mv composer.phar /usr/local/bin/composer",
+      "mount -o loop /home/vagrant/VBoxGuestAdditions.iso /media/cdrom",
+      "sh /media/cdrom/VBoxLinuxAdditions.run",
+      "umount /media/cdrom",
+      "mkdir ~/.ssh",
+      "wget -qO- https://raw.github.com/hashicorp/vagrant/master/keys/vagrant.pub >> ~/.ssh/authorized_keys",
+      "chown -R vagrant: ~/.ssh",
+      "echo 'vagrant ALL=NOPASSWD:ALL' > /tmp/vagrant",
+      "chmod 0440 /tmp/vagrant",
+      "mv /tmp/vagrant /etc/sudoers.d/",
+      "apt-get clean",
+      "rm /home/vagrant/VBoxGuestAdditions.iso"]
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "build/uzerp-dev-1804.box",
+      "vagrantfile_template": "box-source/templates/uzerp-dev-box-Vagrantfile"
+    }
+  ]
+}
+
