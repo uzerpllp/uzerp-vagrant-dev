@@ -20,41 +20,99 @@ exec { "apt-update":
 Exec["apt-update"] -> Package <| |>
 
 # Install and configure postgresql
-class { 'postgresql::server': 
+class { 'postgresql::server':
     listen_addresses => '*',
     ip_mask_allow_all_users => '0.0.0.0/0'
 }
 
-# Postgres config/hba rules
-$postgres_config_entries = lookup('postgres_configs', {})
-create_resources('postgresql::server::config_entry', $postgres_config_entries)
+postgresql::server::config_entry { 'log_destination':
+    value => 'stderr',
+}
 
-$postgres_hba = lookup('postgres_hba', {})
-create_resources('postgresql::server::pg_hba_rule', $postgres_hba)
+postgresql::server::config_entry { 'logging_collector':
+    value => 'on',
+}
 
-# Create databases
-$postgres_databases = lookup('postgres_databases', {})
-create_resources('postgresql::server::database', $postgres_databases)
+postgresql::server::config_entry { 'log_directory':
+    value => 'pg_log',
+}
 
-# Create users/roles
-$postgres_roles = lookup('postgres_roles', {})
-create_resources('postgresql::server::role', $postgres_roles)
+postgresql::server::config_entry { 'log_min_error_statement':
+    value => 'error',
+}
 
-# Grant roles access to databases
-$postgres_grants = lookup('postgres_grants', {})
-create_resources('postgresql::server::database_grant', $postgres_grants)
+# Allow some users to connect without a password
+postgresql::server::pg_hba_rule { 'local trust':
+  description => "local trust",
+  type => 'host',
+  database => 'all',
+  user => 'all',
+  address => '127.0.0.1/32',
+  auth_method => 'trust',
+  order => '000',
+}
+
+postgresql::server::database { 'uzerp':
+        owner => 'sysadmin',
+        encoding => 'UTF8',
+        locale => 'en_GB.UTF-8',
+}
+
+postgresql::server::role { 'www-data':
+        password_hash => 'md586ab55009873f76272464bd71c3fad8e',
+}
+
+postgresql::server::role { 'sysadmin':
+        password_hash => 'md5d6b4c0eace7f2dc0f34f00a75b02743b',
+        superuser => true,
+        createdb => true,
+        createrole => true,
+}
+
+postgresql::server::role { 'readonly':
+        password_hash => 'md5efab781424b23fbfd7ff8d21424d5be0',
+}
+
+postgresql::server::role { 'ooo-data':
+        password_hash => 'md538c9687d34994094b696f388b4815800',
+}
+
+postgresql::server::database_grant { 'www-data-uzerp':
+        privilege => 'ALL',
+        db => 'uzerp',
+        role => 'www-data',
+}
+
+postgresql::server::database_grant { 'sysadmin-uzerp':
+        privilege => 'ALL',
+        db => 'uzerp',
+        role => 'sysadmin',
+}
+
+postgresql::server::database_grant { 'readonly-uzerp':
+        privilege => 'CONNECT',
+        db => 'uzerp',
+        role => 'readonly',
+}
+
+postgresql::server::database_grant { 'ooo-data-uzerp':
+        privilege => 'CONNECT',
+        db => 'uzerp',
+        role => 'ooo-data',
+}
 
 
 #Apache/PHP
 #Prefork MPM required for mod_php
-class { 'apache': 
+class { 'apache':
   mpm_module => 'prefork',
 }
 
-class { '::apache::mod::php': 
+class { '::apache::mod::php':
 }
-# Create apache vhosts
-$apache_vhosts = hiera_hash('apache_vhosts', {})
-create_resources('apache::vhost', $apache_vhosts)
 
+class {'xdebug':
+  xdebug_enable => true,
+  require => Class["apache"],
+}
 
