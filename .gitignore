@@ -1,2 +1,4 @@
 build/*
 box-source/iso*
+packer_cache/*
+*.tar.gz

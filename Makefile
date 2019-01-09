@@ -9,10 +9,14 @@ getiso:
 build:
 	mkdir -p build
 	cp -r box-source/target-files/* build/
-	/home/steve/Work/packer/packer build uzerp-vagrant.json
+	/home/steve/Work/packer/packer build -on-error=ask uzerp-vagrant.json
+	tar -zcvf uzerp-dev-1804-box.tar.gz build/*
+	rm -rf build
 
 .PHONY: clean
 clean:
-	#rm -f iso/*.iso
+	rm -f iso/*.iso
 	rm -rf build
+	rm -rf uzerp-dev-1804-box.tar.gz
 	rm -rf packer_cache
+	rm -rf uzerp-vagrant

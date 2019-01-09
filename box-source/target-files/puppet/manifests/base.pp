@@ -21,46 +21,29 @@ exec { "apt-update":
 # All package installs ensure that apt-get update has run first
 Exec["apt-update"] -> Package <| |>
 
-# Install and configure postgresql
-# Listen on all interfaces and allow any user to connect from outside the VM (pgAdmin/ODBC access)
-class { 'postgresql::server': 
-  listen_addresses        => '*',
-  ip_mask_allow_all_users => '0.0.0.0/0'
-}
-
-# Allow some users to connect without a password
-postgresql::server::pg_hba_rule { 'local trust':
-  description => "local trust",
-  type => 'host',
-  database => 'all',
-  user => 'all',
-  address => '127.0.0.1/32',
-  auth_method => 'trust',
-  order => '000',
-}
-
 # Setup uzERP - See: modules/uzerp
 class { 'uzerp':
   load_data     => true,
-  uzerp_status  => 'uzERP Demo Install',
+  uzerp_status  => 'uzERP Demo DB Installed',
   uzerp_title   => 'uzERP Vagrant System',
-  uzerp_version => 'UZERP-DEV-BOX',
-}
-
-class {'xdebug':
-  xdebug_enable => true,
+  uzerp_version => 'Box: uzerp-dev-1804',
 }
 
 #Apache
-class { 'apache': 
-  mpm_module => 'prefork',
+class { 'apache':
   default_vhost => false,
+  mpm_module => 'prefork',
 }
 
-class { '::apache::mod::php': }
+class { '::apache::mod::php':
+}
 
-apache::vhost { 'localhost':
-  port    => '8080',
-  docroot => '/vagrant/uzerp',
+apache::vhost { 'uzerp':
+        port => '8080',
+        docroot => '/vagrant/uzerp',
+        priority => '20',
+        options => ['-Indexes', '+FollowSymLinks', '-MultiViews'],
+        redirectmatch_status => ['404', '404', '404', '404', '404', '404', '404', '404'],
+        redirectmatch_regexp => ['^/conf/.*$', '^/install/.*$', '^/migrations/.*$', '^/plugins/.*$', '^/schema/.*$', '^/vendor/.*$', '^/composer.*$', '^/phinx.*$'],
 }
 

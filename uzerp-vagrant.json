@@ -63,15 +63,9 @@
       ]
     },
     {
-      "type": "file",
-      "source": "box-source/puppet/hieradata",
-      "destination": "/tmp"
-    },
-    {
       "type": "puppet-masterless",
       "manifest_file": "box-source/puppet/manifests/uzerp-dev-box.pp",
       "module_paths": [ "box-source/puppet/modules" ],
-      "hiera_config_path": "box-source/puppet/hieradata/hiera.yaml",
       "execute_command": "echo '{{user `ssh_pass`}}' | {{.FacterVars}}{{if .Sudo}} sudo -S -E {{end}}puppet apply --verbose --modulepath='{{.ModulePath}}' {{if ne .HieraConfigPath \"\"}}--hiera_config='{{.HieraConfigPath}}' {{end}}  {{if ne .ManifestDir \"\"}}--manifestdir='{{.ManifestDir}}' {{end}} --detailed-exitcodes {{.ManifestFile}}"
     },
     {
