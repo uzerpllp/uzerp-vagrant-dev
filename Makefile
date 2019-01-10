@@ -38,6 +38,6 @@ build:
 clean:
 	@rm -f box-source/iso/*.iso
 	@rm -rf build
-	#@rm -rf *.tar.gz
+	@rm -rf *.tar.gz
 	@rm -rf packer_cache
 	@rm -rf uzerp-vagrant
