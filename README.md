@@ -4,7 +4,7 @@ This repository provides files required to build the uzERP [Vagrant](https://www
 
 ## Packer Build
 
-> Note: you can download a pre-built environment from ```https://uzerp.com/download/uzerp-dev-box/uzerp-dev-1804-box.tar.gz```,
+> Note: you can download a pre-built environment from ```https://www.uzerp.com/download/uzerp-dev-box/uzerp-dev-1804-box.tar.gz```,
 > then follow the instructions [below](#using-the-vagrant-box-for-uzerp-development).
 
 Clone the git repo:
