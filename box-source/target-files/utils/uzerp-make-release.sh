@@ -26,7 +26,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-USE_DEV_REQ="NO"
+USE_DEV_REQ=NO
 GH_RELEASE="NO"
 
 install_composer()
@@ -48,12 +48,16 @@ install_composer()
 # Make a uzERP release archive
 make_release()
 {
+   # Make sure the working directory does not exist
+   rm -rf $RELEASE_WORKDIR
+
    # Create the working directory, if it does not exist, and download composer
    mkdir -p $RELEASE_WORKDIR
 
    # Only proceed if the RELEASE_WORKDIR exists
    if [ -d $RELEASE_WORKDIR ]
       then
+	 echo "Making uzERP release ${RELEASE}..."
          # Pipe git-archive to and use tar to extract to the working directory
          git archive --format=tar.gz ${RELEASE}|tar -xz -C $RELEASE_WORKDIR
 
@@ -66,15 +70,15 @@ make_release()
             echo >&2 "Error: failed to switch to ${RELEASE_WORKDIR}"; exit 1
          fi
 
-         if [ "$USE_DEV_REQ" == "NO" ]; then
+         if [ "${USE_DEV_REQ}" == "NO" ]; then
             # Install uzERP dependencies using composer
             install_composer
             php $RELEASE_ROOT/composer.phar install
          else
-            # Copy vendor directory from local git repository directory
+            echo "Copying PHP depndencies from local git repository directory"
             cp -r $REPO/vendor $RELEASE_WORKDIR
             # Remove composer file
-            rm composer.json
+            rm -f composer.json
          fi
 
          # Build js/css
@@ -133,7 +137,7 @@ hash npm 2>/dev/null || { echo -e >&2 "Error: npm is required to install gulp to
 hash hub 2>/dev/null || { echo -e >&2 "Warning: hub is required to create releases on github\nbut does not seem to be installed."; }
 
 # Process comand line options
-while getopts ":w:r:h:d:p" opt
+while getopts ":w:r:hdp" opt
 do
    case $opt in
       w)
@@ -143,7 +147,7 @@ do
       d)
          USE_DEV_REQ="YES";;
       p)
-	GH_RELEASE="YES";;
+	GH_RELEASE=YES;;
       h)
          usage;;
    esac
