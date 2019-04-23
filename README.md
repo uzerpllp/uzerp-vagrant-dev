@@ -15,7 +15,7 @@ $ cd uzerp-packer
 $ git clone https://github.com/uzerpllp/uzerp-packer-dev.git
 ```
 
-Download the Ubuntu server ISO fiel and Build:
+Download the Ubuntu server ISO file and Build:
 
 ```
 $ make getiso
