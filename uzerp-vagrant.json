@@ -4,15 +4,15 @@
       "ssh_pass": "vagrant",
       "hostname": "uzerp-dev-box"
   },
-    
+
   "builders": [
     {
       "type": "virtualbox-iso",
       "output_directory": "uzerp-vagrant",
       "vm_name": "uzerp-dev-box-1804",
-      "guest_os_type": "Ubuntu_64", 
+      "guest_os_type": "Ubuntu_64",
       "iso_url": "box-source/iso/ubuntu-server.iso",
-      "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+      "iso_checksum": "a2cb36dc010d98ad9253ea5ad5a07fd6b409e3412c48f1860536970b073c98f5",
       "iso_checksum_type": "sha256",
       "disk_size": "25000",
       "hard_drive_interface": "sata",
@@ -53,7 +53,7 @@
       "boot_wait": "10s"
     }
   ],
-  
+
   "provisioners": [
     {
       "type": "shell",
