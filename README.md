@@ -22,7 +22,7 @@ $ make getiso
 $ make
 ```
 
-The output, uzerp-dev-1804-box.tar.gz, contains the Vagrant box, puppet maodules/manifests, and utility files.
+The output, uzerp-dev-1804-box.tar.gz, contains the Vagrant box, puppet modules/manifests, and utility files.
 
 ## Using the Vagrant box for uzERP Development
 
@@ -48,7 +48,7 @@ $ cd uzerp-dev
 Download the vagrant box and provisioner files:
 
 ```
-$ wget https://uzerp.com/download/uzerp-dev-box/uzerp-dev-1804-box.tar.gz -P /tmp
+$ wget https://www.uzerp.com/downloads/uzerp-dev-1804-box.tar.gz -P /tmp
 $ tar -xvf /tmp/uzerp-dev-1804-box.tar.gz --strip 1
 ```
 
